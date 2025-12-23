@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="スモールステップ管理アプリ - あらゆる行動を5つのステップで可視化">
+  <meta name="description" content="スモールステップ管理アプリ - あらゆる行動を可視化">
   <title>チャレンジリスト✨</title>
   <style>
     * {
@@ -621,13 +621,13 @@
     <!-- ナビゲーション -->
     <div class="nav-buttons">
       <button class="nav-btn nav-btn-primary" onclick="showScreen('setup')">
-        📝 じゅんび
+        📝 準備
       </button>
       <button class="nav-btn nav-btn-secondary" onclick="showScreen('history')">
-        📊 きろく
+        📊 記録
       </button>
       <button class="nav-btn nav-btn-tertiary" onclick="showScreen('photos')">
-        📸 しゃしん
+        📸 写真
       </button>
     </div>
 
@@ -638,29 +638,26 @@
         
         <!-- Geminiリンクボタン -->
         <a href="https://gemini.google.com/gem/1Xxzm7Gr9Ji-Pe_DhTv6mmUQPajlaWw93?usp=sharing" target="_blank" style="display: block; padding: 15px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; text-decoration: none; border-radius: 15px; text-align: center; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); margin-bottom: 15px;">
-          🤖 Geminiに きいてみる
+          🤖 Geminiに聞いてみる
         </a>
         
         <!-- コピペ用エリア -->
         <div style="margin-bottom: 15px;">
-          <label style="display: block; color: #ff69b4; font-weight: bold; margin-bottom: 8px;">
-            📋 Geminiから コピペする 場合:
-          </label>
-          <textarea id="bulkPasteArea" placeholder="Geminiの こたえを ここに ペーストしてください&#10;(かいぎょう くぎりで じどうで わかれます)" style="width: 100%; min-height: 100px; padding: 12px; border: 2px solid #a78bfa; border-radius: 10px; font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
+          <textarea id="bulkPasteArea" placeholder="Geminiの回答をここにペーストしてください" style="width: 100%; min-height: 100px; padding: 12px; border: 2px solid #a78bfa; border-radius: 10px; font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
           <button onclick="parseBulkPaste()" style="width: 100%; padding: 12px; margin-top: 10px; background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;">
-            📥 一度に 追加する
+            📥 一括追加
           </button>
         </div>
         
         <div style="text-align: center; margin: 15px 0; color: #999; font-size: 14px;">
-          または 自分で 入力 ↓
+          または手入力 ↓
         </div>
         
         <div class="mission-input-container" id="missionInputs">
           <!-- 動的に追加 -->
         </div>
         <button class="add-mission-btn" onclick="addMissionInput()">
-          ➕ チャレンジを 追加
+          ➕ チャレンジを追加
         </button>
         <button class="start-btn" onclick="startChallenge()">
           🚀 スタート!
@@ -736,7 +733,7 @@
     <!-- 履歴画面 -->
     <div class="screen" id="historyScreen">
       <div class="history-screen">
-        <div class="history-title">これまでの きろく</div>
+        <div class="history-title">これまでの記録</div>
         <div id="historyList">
           <!-- 動的に追加 -->
         </div>
@@ -746,11 +743,11 @@
     <!-- 写真管理画面 -->
     <div class="screen" id="photosScreen">
       <div class="photo-manager-screen">
-        <div class="photo-manager-title">📸 すきな しゃしん 📸</div>
+        <div class="photo-manager-title">📸 好きな写真 📸</div>
         
         <div class="photo-upload-section">
           <label for="photoUpload" class="photo-upload-label">
-            📷 しゃしんを ついかする
+            📷 写真を追加する
           </label>
           <input 
             type="file" 
@@ -762,8 +759,8 @@
         </div>
 
         <div style="text-align: center; margin-bottom: 15px; color: #999; font-size: 14px;">
-          チャレンジが おわったときに<br>
-          ランダムで 1まい でるよ! 🎉
+          チャレンジが終わったときに<br>
+          ランダムで1枚表示されます 🎉
         </div>
 
         <div class="photo-grid" id="photoGrid">
@@ -771,8 +768,8 @@
         </div>
 
         <div id="noPhotos" class="no-photos">
-          まだ しゃしんが ありません<br>
-          すきな しゃしんを ついか してね!
+          まだ写真がありません<br>
+          好きな写真を追加してください
         </div>
       </div>
     </div>
@@ -894,11 +891,11 @@
         localStorage.setItem(STORAGE_KEY_PHOTOS, JSON.stringify(rewardPhotos));
       } catch (e) {
         console.error('写真の保存に失敗:', e);
-        alert('しゃしんが おおすぎます! いくつか けしてください');
+        alert('写真が多すぎます。いくつか削除してください');
       }
     }
 
-    // 写真アップロード処理
+    // 写真アップロード処理（自動リサイズ機能付き）
     function handlePhotoUpload(event) {
       const files = event.target.files;
       
@@ -909,20 +906,68 @@
           return;
         }
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
+        // 画像を自動リサイズして保存
+        resizeImage(file, (resizedDataUrl) => {
           rewardPhotos.push({
             id: Date.now() + Math.random(),
-            data: e.target.result
+            data: resizedDataUrl
           });
           savePhotos();
           renderPhotoGrid();
-        };
-        reader.readAsDataURL(file);
+        });
       });
 
       // ファイル入力をリセット
       event.target.value = '';
+    }
+
+    // 画像リサイズ関数（最大800px、品質0.8）
+    function resizeImage(file, callback) {
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const img = new Image();
+        
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // 最大サイズ設定
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          
+          let width = img.width;
+          let height = img.height;
+          
+          // アスペクト比を保持してリサイズ
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = Math.round((width * MAX_HEIGHT) / height);
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // 画像を描画
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // リサイズ後のデータURLを取得（JPEG、品質80%）
+          const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          
+          callback(resizedDataUrl);
+        };
+        
+        img.src = e.target.result;
+      };
+      
+      reader.readAsDataURL(file);
     }
 
     // 写真グリッド表示
@@ -961,7 +1006,7 @@
 
     // 写真削除
     function deletePhoto(photoId) {
-      const confirmed = confirm('この しゃしんを けしますか?');
+      const confirmed = confirm('この写真を削除しますか?');
       if (confirmed) {
         rewardPhotos = rewardPhotos.filter(p => p.id !== photoId);
         savePhotos();
@@ -1008,23 +1053,36 @@
       }
     };
 
-    // 一括ペースト処理
+    // 一括ペースト処理（スマホコピー対応強化版）
     function parseBulkPaste() {
       const textarea = document.getElementById('bulkPasteArea');
       const text = textarea.value.trim();
       
       if (!text) {
-        alert('テキストを ペーストしてください!');
+        alert('テキストをペーストしてください');
         return;
       }
       
       let lines = [];
-      const linesByNewline = text.split('\n');
       
-      linesByNewline.forEach(line => {
-        const linesBySlash = line.split('/');
-        linesBySlash.forEach(segment => {
-          const linesByComma = segment.split(/[、,]/);
+      // ステップ1: まずスラッシュ(/)で分割（最優先）
+      // Geminiの出力が「A / B / C」形式の場合に対応
+      if (text.includes('/')) {
+        const parts = text.split('/');
+        parts.forEach(part => {
+          const trimmed = part.trim();
+          if (trimmed.length > 0) {
+            lines.push(trimmed);
+          }
+        });
+      } else {
+        // ステップ2: スラッシュがない場合は改行で分割
+        const linesByNewline = text.split('\n');
+        
+        linesByNewline.forEach(line => {
+          // カンマ(、,)で分割
+          const linesByComma = line.split(/[、,]/);
+          
           linesByComma.forEach(item => {
             const trimmed = item.trim();
             if (trimmed.length > 0) {
@@ -1032,33 +1090,51 @@
             }
           });
         });
+      }
+      
+      // 番号や記号を削除（例: 1. や - や • など）
+      lines = lines.map(line => {
+        // 行頭の番号・記号・空白を削除
+        return line.replace(/^[\d\-\*\•\.。\s]+/, '').trim();
       });
       
-      lines = lines.map(line => line.replace(/^[\d\-\*\•\.]+\s*/, ''));
+      // 空行を除外
       lines = lines.filter(line => line.length > 0);
       
+      // 重複を除去（念のため）
+      lines = [...new Set(lines)];
+      
       if (lines.length === 0) {
-        alert('ゆうこうな チャレンジが みつかりませんでした');
+        alert('有効なチャレンジが見つかりませんでした');
         return;
       }
       
+      // 既存の入力欄をクリア
       const container = document.getElementById('missionInputs');
       container.innerHTML = '';
       
+      // 各行をミッション入力欄として追加
       lines.forEach((line, index) => {
         addMissionInput(line);
       });
       
+      // テキストエリアをクリア
       textarea.value = '';
-      alert(`${lines.length}この チャレンジを 追加しました! 🎉`);
+      
+      alert(`${lines.length}個のチャレンジを追加しました 🎉`);
     }
 
-    // 初期ミッション設定
+    // 初期ミッション設定（8つに変更）
     function initializeMissions() {
       const defaultMissions = [
-        'きがえる',
-        'くつしたをはく',
-        'げんかんにいく'
+        'くつしたを はく',
+        'くつを はく',
+        'げんかんの ドアを あける',
+        'そとに でる',
+        'くるまに のる',
+        'シートベルトを する',
+        'おんがくを きく',
+        'くるまから おりる'
       ];
       
       const container = document.getElementById('missionInputs');
@@ -1093,7 +1169,7 @@
       if (container.children.length > 1) {
         button.parentElement.remove();
       } else {
-        alert('最低1つは チャレンジが 必要です!');
+        alert('最低1つはチャレンジが必要です');
       }
     }
 
@@ -1113,7 +1189,7 @@
       }
       
       if (missions.length === 0) {
-        alert('チャレンジを 入力してください!');
+        alert('チャレンジを入力してください');
         return;
       }
       
@@ -1292,7 +1368,7 @@
       const list = document.getElementById('historyList');
       
       if (history.length === 0) {
-        list.innerHTML = '<div class="no-history">まだ きろくが ありません</div>';
+        list.innerHTML = '<div class="no-history">まだ記録がありません</div>';
         return;
       }
       
@@ -1304,7 +1380,7 @@
           <div class="history-content">
             <div class="history-date">${record.date}</div>
             <div class="history-stats">
-              ${record.completed} / ${record.total} たっせい
+              ${record.completed} / ${record.total} 達成
               ${record.completed === record.total ? '🎉' : '😊'}
             </div>
           </div>
@@ -1316,7 +1392,7 @@
 
     // 履歴削除
     function deleteHistory(index) {
-      const confirmed = confirm('この 記録を 削除 しますか?');
+      const confirmed = confirm('この記録を削除しますか?');
       if (confirmed) {
         history.splice(index, 1);
         localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
